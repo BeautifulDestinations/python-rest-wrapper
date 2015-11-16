@@ -1,11 +1,16 @@
 #!flask/bin/python
 import six
+import time
 from flask import Flask, jsonify, abort, request, make_response, url_for
 from flask.ext.httpauth import HTTPBasicAuth
 
 app = Flask(__name__, static_url_path="")
 auth = HTTPBasicAuth()
 
+class Foo(object):
+    count = 22
+
+foo = Foo()
 
 @auth.get_password
 def get_password(username):
@@ -109,6 +114,14 @@ def update_task(task_id):
                                               task[0]['description'])
     task[0]['done'] = request.json.get('done', task[0]['done'])
     return jsonify({'task': make_public_task(task[0])})
+
+
+
+@app.route('/todo/api/v1.0/count', methods=['GET'])
+def count():
+    foo.count = foo.count + 1
+    # time.sleep(2)
+    return jsonify({'task': foo.count})
 
 
 @app.route('/todo/api/v1.0/tasks/<int:task_id>', methods=['DELETE'])
