@@ -83,7 +83,6 @@ def allowed_file(filename):
 
 @app.route('/api/v1/predict', methods=['POST'])
 def uploadImage():
-    # return jsonify({'status': 'ok'})
     file = request.files['file']
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
