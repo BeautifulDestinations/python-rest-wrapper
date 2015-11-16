@@ -96,7 +96,7 @@ def uploadImage():
         jobs.put(Job(longFileName, {'myParameter' : None}, prom))
         result = prom.sync()
 
-        return jsonify({'status': 'ok', 'result': result})
+        return jsonify(result)
 
 
 if __name__ == '__main__':
