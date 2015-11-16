@@ -25,17 +25,17 @@ class Promise():
             self.value = x
             self.queue.put(None)
         except Queue.Full:
-            return None
+            pass
     def sync(self):
         while(True):
             try:
                 self.queue.get(True, 1)
+                # self.queue.put(None)
                 return self.value
+            # except Queue.Full:
+                # return self.value
             except Queue.Empty:
-                x = 1
-                # Nothing
-        return None
-        # TODO
+                pass
 
 class Job:
     fileName   = None
