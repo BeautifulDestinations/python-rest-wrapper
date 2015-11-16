@@ -52,7 +52,7 @@ def job_handler():
         print("Processing ", job.fileName, job.parameters)
         # Do image processing stuff with job.fileName and job.parameters
         # Send result to promise
-        job.promise.fullfill({'this':1, 'is':2, 'a':[1,2,3,4], 'result':True})
+        job.promise.fullfill({'name': job.fileName, 'this':1, 'is':2, 'a':[1,2,3,4], 'result':True})
 
 @auth.get_password
 def get_password(username):
