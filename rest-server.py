@@ -3,9 +3,9 @@ import six
 import time
 import threading
 import Queue
-from flask import Flask, jsonify, abort, request, make_response, url_for
-from flask.ext.httpauth import HTTPBasicAuth
-from werkzeug import secure_filename
+from   flask              import Flask, jsonify, abort, request, make_response, url_for
+from   flask.ext.httpauth import HTTPBasicAuth
+from   werkzeug           import secure_filename
 import os
 
 UPLOAD_FOLDER = 'uploads'
@@ -38,19 +38,19 @@ class Promise():
         # TODO
 
 class Job:
-    filename   = None
+    fileName   = None
     parameters = None
-    promise   = None
-    def __init__(self, filename, parameters, promise):
-        self.filename   = filename
+    promise    = None
+    def __init__(self, fileName, parameters, promise):
+        self.fileName   = fileName
         self.parameters = parameters
         self.promise    = promise
 
 def job_handler():
     while (True):
         job = jobs.get()
-        print("Processing ", job.filename, job.parameters)
-        # Do image processing stuff with job.filename and job.parameters
+        print("Processing ", job.fileName, job.parameters)
+        # Do image processing stuff with job.fileName and job.parameters
         # Send result to promise
         job.promise.fullfill({'this':1, 'is':2, 'a':[1,2,3,4], 'result':True})
 
@@ -77,22 +77,26 @@ def bad_request(error):
 def not_found(error):
     return make_response(jsonify({'error': 'Not found'}), 404)
 
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+def allowed_file(fileName):
+    return '.' in fileName and \
+           fileName.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
 @app.route('/api/v1/predict', methods=['POST'])
 def uploadImage():
     file = request.files['file']
     if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        # TODO assure uploads directory
-        # Write to ./uploads
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        fileName     = secure_filename(file.filename)
+        longFileName = os.path.join(app.config['UPLOAD_FOLDER'], fileName)
+
+        if not os.path.exists('uploads'):
+            os.makedirs('uploads')
+        file.save(longFileName)
+
         prom = Promise()
-        jobs.put(Job(os.path.join(app.config['UPLOAD_FOLDER'], filename), {'myParameter':None}, prom))
-        r = prom.sync()
-        return jsonify({'status': r})
+        jobs.put(Job(longFileName, {'myParameter' : None}, prom))
+        result = prom.sync()
+
+        return jsonify({'status': 'ok', 'result': result})
 
 
 if __name__ == '__main__':
