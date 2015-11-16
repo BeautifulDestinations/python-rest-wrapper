@@ -90,11 +90,8 @@ def uploadImage():
         # TODO assure uploads directory
         # Write to ./uploads
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        # TODO post to job queue with future
-
         prom = Promise()
         jobs.put(Job(os.path.join(app.config['UPLOAD_FOLDER'], filename), {'myParameter':None}, prom))
-
         r = prom.sync()
         return jsonify({'status': r})
 
