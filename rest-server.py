@@ -17,6 +17,11 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 auth = HTTPBasicAuth()
 jobs = Queue.Queue()
 
+import sys
+sys.path.append( '/home/bd/GitHub/theano-playground' )
+import deployed_model
+model = deployed_model.Model()
+
 class Promise():
     value = None
     queue = Queue.Queue(1)
@@ -51,8 +56,9 @@ def job_handler():
         job = jobs.get()
         print("Processing ", job.fileName, job.parameters)
         # Do image processing stuff with job.fileName and job.parameters
+        pred = model.make_prediction( job.fileName, job.parameters )
         # Send result to promise
-        job.promise.fullfill({'name': job.fileName, 'this':1, 'is':2, 'a':[1,2,3,4], 'result':True})
+        job.promise.fullfill( {'name': job.fileName, 'this':pred} )
 
 @auth.get_password
 def get_password(username):
