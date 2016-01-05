@@ -23,7 +23,13 @@ baseDir = wkDir.partition('/python-rest-wrapper')[0]
 sys.path.append( baseDir+'/theano_playground' )
 
 import deployed_model
-model = deployed_model.Model()
+
+###
+### Import model here
+###
+from deployed_model import model1
+
+print '\nModel imported!\n'
 
 class Promise():
     value = None
@@ -59,7 +65,7 @@ def job_handler():
         job = jobs.get()
         print("Processing ", job.fileName, job.parameters)
         # Do image processing stuff with job.fileName and job.parameters
-        pred = model.make_prediction( job.fileName, job.parameters )
+        pred = model1.make_prediction( job.fileName, job.parameters )
         # Send result to promise
         job.promise.fullfill( {'name': job.fileName, 'this':pred} )
 
