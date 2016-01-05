@@ -18,7 +18,10 @@ auth = HTTPBasicAuth()
 jobs = Queue.Queue()
 
 import sys
-sys.path.append( '/home/bd/GitHub/theano-playground' )
+wkDir = os.getcwd()
+baseDir = wkDir.partition('/python-rest-wrapper')[0]
+sys.path.append( baseDir+'/theano_playground' )
+
 import deployed_model
 model = deployed_model.Model()
 
