@@ -67,7 +67,7 @@ def job_handler():
         # Do image processing stuff with job.fileName and job.parameters
         pred = model1.make_prediction( job.fileName, job.parameters )
         # Send result to promise
-        job.promise.fullfill( {'name': job.fileName, 'this':pred} )
+        job.promise.fullfill( {'name': job.fileName, 'predictions':pred} )
 
 @auth.get_password
 def get_password(username):
