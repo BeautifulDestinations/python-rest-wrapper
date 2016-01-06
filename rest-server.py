@@ -118,4 +118,4 @@ if __name__ == '__main__':
     t = threading.Thread(target = job_handler)
     t.daemon = True
     t.start()
-    app.run(debug=True)
+    app.run(host= '0.0.0.0', debug=True)
