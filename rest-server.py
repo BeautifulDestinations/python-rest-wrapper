@@ -3,10 +3,14 @@ import six
 import time
 import threading
 import Queue
+from   PIL                import Image
 from   flask              import Flask, jsonify, abort, request, make_response, url_for
 from   flask.ext.httpauth import HTTPBasicAuth
 from   werkzeug           import secure_filename
 import os
+import sys
+import string
+import imagehash
 
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
@@ -17,16 +21,11 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 auth = HTTPBasicAuth()
 jobs = Queue.Queue()
 
-import sys
 wkDir = os.getcwd()
 baseDir = wkDir.partition('/python-rest-wrapper')[0]
 sys.path.append( baseDir+'/theano_playground' )
 
 import deployed_model
-
-###
-### Import model here
-###
 from deployed_model import model1
 
 print '\nModel imported!\n'
@@ -53,9 +52,11 @@ class Promise():
 
 class Job:
     fileName   = None
+    jobType    = None
     parameters = None
     promise    = None
-    def __init__(self, fileName, parameters, promise):
+    def __init__(self, jobType, fileName, parameters, promise):
+        self.jobType    = jobType
         self.fileName   = fileName
         self.parameters = parameters
         self.promise    = promise
@@ -63,11 +64,20 @@ class Job:
 def job_handler():
     while (True):
         job = jobs.get()
-        print("Processing ", job.fileName, job.parameters)
-        # Do image processing stuff with job.fileName and job.parameters
-        pred = model1.make_prediction( job.fileName, job.parameters )
-        # Send result to promise
-        job.promise.fullfill( {'name': job.fileName, 'predictions':pred} )
+        with open( 'logFiles/queue.log', 'a' ) as f:
+            f.write( str( job.qsize() ) )
+        if jobs.jobType == 'predict':
+            # Do image processing stuff with job.fileName and job.parameters
+            pred = model1.make_prediction( job.fileName, job.parameters )
+            # Send result to promise
+            job.promise.fullfill( {'name': job.fileName, 'predictions':pred} )
+        if jobs.jobType == 'enhance':
+            img = enhance_image.enhance_image_clahe( job.fileName, job.parameters )
+            img_hash = imagehash.average_hash( img )
+            fpath = string.join( 'enhancement_results/', img_hash, '.jpg' )
+            img.save( fpath )
+            # Send result to promise
+            job.promise.fullfill( {'name': job.fileName, 'url':fpath} )
 
 @auth.get_password
 def get_password(username):
@@ -96,23 +106,49 @@ def allowed_file(fileName):
     return '.' in fileName and \
            fileName.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
-@app.route('/api/v1/predict', methods=['POST'])
-def uploadImage():
+@app.route('/api/v1/enhance', methods=['POST'])
+def enhanceImage():
     file = request.files['file']
     if file and allowed_file(file.filename):
+        # Auto generate filename to avoid clashes
         fileName     = secure_filename(file.filename)
         longFileName = os.path.join(app.config['UPLOAD_FOLDER'], fileName)
 
-        if not os.path.exists('uploads'):
-            os.makedirs('uploads')
+        assure_dir_exists()
+
         file.save(longFileName)
 
         prom = Promise()
-        jobs.put(Job(longFileName, {'myParameter' : None}, prom))
+        jobs.put(Job('enhance', longFileName, {'myParameter' : None}, prom))
         result = prom.sync()
 
         return jsonify(result)
 
+@app.route('/api/v1/predict', methods=['POST'])
+def uploadImage():
+    file = request.files['file']
+    if file and allowed_file(file.filename):
+        # Auto generate filename to avoid clashes
+        fileName     = secure_filename(file.filename)
+        longFileName = os.path.join(app.config['UPLOAD_FOLDER'], fileName)
+
+        assure_dir_exists()
+
+        file.save(longFileName)
+
+        prom = Promise()
+        jobs.put(Job('predict', longFileName, {'myParameter' : None}, prom))
+        result = prom.sync()
+
+        return jsonify(result)
+
+def assure_dir_exists():
+   if not os.path.exists('uploads'):
+       os.makedirs('uploads')
+   if not os.path.exists('enhancement_results'):
+       os.makedirs('enhancement_results')
+   if not os.path.exists('logFiles'):
+       os.makedirs('logFiles')
 
 if __name__ == '__main__':
     t = threading.Thread(target = job_handler)

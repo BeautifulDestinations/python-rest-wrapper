@@ -1,42 +1,13 @@
-<!--
-<!DOCTYPE HTML>
-
-
-
-<html>
-	<head>
-		<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-	</head>
-	<body>
-    <input class="file-upload" type="file" accept="image/*" />
-    <script type="text/javascript">
-      function uploadFiles(url, files) {
-          var formData = new FormData();
-
-          // Not an array
-          for (var i = 0, file; file = files[i]; ++i) {
-              formData.append(file.name, file);
-          }
-
-          var xhr = new XMLHttpRequest();
-          xhr.open('POST', url, true);
-          xhr.onload = function (e) {
-              console.log(e);
-          };
-          xhr.send(formData); // multipart/form-data
-      }
-
-      document.querySelector('input[type="file"]').addEventListener('change', function (e) {
-          uploadFiles('http://127.0.0.1:5000/todo/api/v1/predict', this.files);
-      }, false);
-    </script>
-	</body>
-</html> -->
-
 <!doctype html>
    <title>Upload new File</title>
-   <h1>Upload new File</h1>
-   <form action="http://188.226.203.74:5000/api/v1/predict" method=post enctype=multipart/form-data>
+   <h1>Predict</h1>
+   <form action="http://localhost:5000/api/v1/predict" method=post enctype=multipart/form-data>
      <p><input type=file name=file>
         <input type=submit value=Upload>
+   </form>
+   <h1>Enhance</h1>
+   <form action="http://localhost:5000/api/v1/enhance" method=post enctype=multipart/form-data>
+     <p><input type=file name=file>
+        <input type=submit value=Upload>
+
    </form>
