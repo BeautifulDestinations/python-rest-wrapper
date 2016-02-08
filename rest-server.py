@@ -5,7 +5,7 @@ import threading
 import Queue
 import PIL
 from   PIL                import Image
-from   flask              import Flask, jsonify, abort, request, make_response, url_for
+from   flask              import Flask, jsonify, abort, request, make_response, url_for, send_from_directory
 from   flask.ext.httpauth import HTTPBasicAuth
 from   werkzeug           import secure_filename
 import os
@@ -143,7 +143,7 @@ def uploadImage():
 
         return jsonify(result)
 
-@app.route('/enhanced-imgs/<path:path>')
+@app.route('/enhancement_results/<path:path>')
 def send_img(path):
     return send_from_directory('enhancement_results/', path)
 
