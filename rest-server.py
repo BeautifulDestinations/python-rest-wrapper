@@ -3,6 +3,7 @@ import six
 import time
 import threading
 import Queue
+import PIL
 from   PIL                import Image
 from   flask              import Flask, jsonify, abort, request, make_response, url_for
 from   flask.ext.httpauth import HTTPBasicAuth
@@ -65,16 +66,16 @@ def job_handler():
     while (True):
         job = jobs.get()
         with open( 'logFiles/queue.log', 'a' ) as f:
-            f.write( str( job.qsize() ) )
-        if jobs.jobType == 'predict':
+            f.write( str( jobs.qsize() ) )
+        if job.jobType == 'predict':
             # Do image processing stuff with job.fileName and job.parameters
             pred = model1.make_prediction( job.fileName, job.parameters )
             # Send result to promise
             job.promise.fullfill( {'name': job.fileName, 'predictions':pred} )
-        if jobs.jobType == 'enhance':
-            img = enhance_image.enhance_image_clahe( job.fileName, job.parameters )
+        if job.jobType == 'enhance':
+            img = deployed_model.enhance_image_clahe( job.fileName, job.parameters )
             img_hash = imagehash.average_hash( img )
-            fpath = string.join( 'enhancement_results/', img_hash, '.jpg' )
+            fpath = 'enhancement_results/'+str( img_hash ) + '.jpg'
             img.save( fpath )
             # Send result to promise
             job.promise.fullfill( {'name': job.fileName, 'url':fpath} )
