@@ -143,6 +143,11 @@ def uploadImage():
 
         return jsonify(result)
 
+@app.route('/enhanced-imgs/<path:path>')
+def send_img(path):
+    return send_from_directory('enhancement_results/', path)
+
+
 def assure_dir_exists():
    if not os.path.exists('uploads'):
        os.makedirs('uploads')
