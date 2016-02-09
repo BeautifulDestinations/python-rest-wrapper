@@ -12,3 +12,11 @@ Setup
 - Install Python 2.7 and git.
 - Run `setup.sh`
 - Run `./rest-server.py` to start the server
+
+Deploy a change
+---------------
+
+- SSH to root@188.226.203.74 (you need a key, and also forward your SSH key in /etc/ssh/ssh_config)
+- cd python-rest-server
+- git pull
+- service pypredict restart
