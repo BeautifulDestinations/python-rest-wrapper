@@ -73,7 +73,7 @@ def job_handler():
             # Send result to promise
             job.promise.fullfill( {'name': job.fileName, 'predictions':pred} )
         if job.jobType == 'enhance':
-            img = deployed_model.enhance_image_clahe( job.fileName, job.parameters )
+            img = deployed_model.enhance_image_clahe_on_LAB( job.fileName, job.parameters )
             img_hash = imagehash.average_hash( img )
             fpath = 'enhancement_results/'+str( img_hash ) + '.jpg'
             img.save( fpath )
